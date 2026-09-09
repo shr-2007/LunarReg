@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: lunarreg-api-sih-2026
+    runtime: python
+    rootDir: backend
+    plan: free
+    region: singapore
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT --workers 1
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.8
+      - key: MAX_UPLOAD_MB
+        value: 50
+      - key: RESULT_TTL_SECONDS
+        value: 7200
+
+  - type: web
+    name: lunarreg-ui-sih-2026
+    runtime: node
+    plan: free
+    region: singapore
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /
+    autoDeployTrigger: commit
+    envVars:
+      - key: NODE_VERSION
+        value: 22.14.0
+      - key: LUNARREG_API_HOSTPORT
+        fromService:
+          type: web
+          name: lunarreg-api-sih-2026
+          property: hostport
